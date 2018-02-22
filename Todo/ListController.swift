@@ -11,8 +11,8 @@ import UIKit
 class ListController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     var itemTable: UITableView!
-    var keys: [String] = ["test"]
-    var items: [String:[Item]] = ["test":[Item(name: "hey", done: false, group: "test")]]
+    var keys: [String] = ["Veldig Hemmelig"]
+    var items: [String:[Item]] = ["Veldig Hemmelig":[Item(name: "Super Hemmelig", done: false, group: "Veldig Hemmelig")]]
     
     struct ItemIndexPath {
         let item: Item
