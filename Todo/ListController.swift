@@ -12,7 +12,7 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     var itemTable: UITableView!
     var keys: [String] = ["Veldig Hemmelig"]
-    var items: [String:[Item]] = ["Veldig Hemmelig":[Item(name: "Hemmelig", done: false, group: "Veldig Hemmelig")]]
+    var items: [String:[Item]] = ["Veldig Hemmelig":[Item(name: "Super Hemmelig", done: false, group: "Veldig Hemmelig")]]
     
     struct ItemIndexPath {
         let item: Item
