@@ -7,14 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EC2C359D203AE29000E7488B /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC2C359C203AE29000E7488B /* Extension.swift */; };
 		EC3F563A2036ECA000DDAFCC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F56392036ECA000DDAFCC /* AppDelegate.swift */; };
-		EC3F563C2036ECA000DDAFCC /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F563B2036ECA000DDAFCC /* ViewController.swift */; };
+		EC3F563C2036ECA000DDAFCC /* ListController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F563B2036ECA000DDAFCC /* ListController.swift */; };
 		EC3F563F2036ECA000DDAFCC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC3F563D2036ECA000DDAFCC /* Main.storyboard */; };
 		EC3F56422036ECA000DDAFCC /* Todo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = EC3F56402036ECA000DDAFCC /* Todo.xcdatamodeld */; };
 		EC3F56442036ECA000DDAFCC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EC3F56432036ECA000DDAFCC /* Assets.xcassets */; };
 		EC3F56472036ECA000DDAFCC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EC3F56452036ECA000DDAFCC /* LaunchScreen.storyboard */; };
 		EC3F56522036ECA000DDAFCC /* TodoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F56512036ECA000DDAFCC /* TodoTests.swift */; };
 		EC3F565D2036ECA000DDAFCC /* TodoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F565C2036ECA000DDAFCC /* TodoUITests.swift */; };
+		EC3F566B20370EFA00DDAFCC /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F566A20370EFA00DDAFCC /* Item.swift */; };
+		EC6A7046203C42CC00937662 /* ItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC6A7045203C42CC00937662 /* ItemViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,9 +38,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		EC2C359C203AE29000E7488B /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		EC3F56362036ECA000DDAFCC /* Todo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Todo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC3F56392036ECA000DDAFCC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		EC3F563B2036ECA000DDAFCC /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		EC3F563B2036ECA000DDAFCC /* ListController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListController.swift; sourceTree = "<group>"; };
 		EC3F563E2036ECA000DDAFCC /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		EC3F56412036ECA000DDAFCC /* Todo.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Todo.xcdatamodel; sourceTree = "<group>"; };
 		EC3F56432036ECA000DDAFCC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -49,6 +53,8 @@
 		EC3F56582036ECA000DDAFCC /* TodoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TodoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC3F565C2036ECA000DDAFCC /* TodoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoUITests.swift; sourceTree = "<group>"; };
 		EC3F565E2036ECA000DDAFCC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EC3F566A20370EFA00DDAFCC /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
+		EC6A7045203C42CC00937662 /* ItemViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,12 +106,15 @@
 			isa = PBXGroup;
 			children = (
 				EC3F56392036ECA000DDAFCC /* AppDelegate.swift */,
-				EC3F563B2036ECA000DDAFCC /* ViewController.swift */,
+				EC3F563B2036ECA000DDAFCC /* ListController.swift */,
 				EC3F563D2036ECA000DDAFCC /* Main.storyboard */,
 				EC3F56432036ECA000DDAFCC /* Assets.xcassets */,
 				EC3F56452036ECA000DDAFCC /* LaunchScreen.storyboard */,
 				EC3F56482036ECA000DDAFCC /* Info.plist */,
 				EC3F56402036ECA000DDAFCC /* Todo.xcdatamodeld */,
+				EC3F566A20370EFA00DDAFCC /* Item.swift */,
+				EC2C359C203AE29000E7488B /* Extension.swift */,
+				EC6A7045203C42CC00937662 /* ItemViewController.swift */,
 			);
 			path = Todo;
 			sourceTree = "<group>";
@@ -262,9 +271,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EC3F563C2036ECA000DDAFCC /* ViewController.swift in Sources */,
+				EC2C359D203AE29000E7488B /* Extension.swift in Sources */,
+				EC3F566B20370EFA00DDAFCC /* Item.swift in Sources */,
+				EC3F563C2036ECA000DDAFCC /* ListController.swift in Sources */,
 				EC3F56422036ECA000DDAFCC /* Todo.xcdatamodeld in Sources */,
 				EC3F563A2036ECA000DDAFCC /* AppDelegate.swift in Sources */,
+				EC6A7046203C42CC00937662 /* ItemViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
