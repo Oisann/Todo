@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreData
 
 class ItemViewController: UIViewController {
     
@@ -20,10 +21,37 @@ class ItemViewController: UIViewController {
     @objc func saveItem() {
         guard let newName = nameField.text, !newName.isEmpty, let newGroup = sectionField.text, !newGroup.isEmpty else { return }
         if (newName != oldItem?.name || newGroup != oldItem?.group || toggleDone.isOn != oldItem?.done) || oldItem == nil {
-            newItem = Item(name: newName, done: toggleDone.isOn, group: newGroup)
+            //newItem = Item(name: newName, done: toggleDone.isOn, group: newGroup)
+            guard let newestItem = save(name: newName, done: toggleDone.isOn, group: newGroup) else { return }
+            newItem = newestItem
             onSaveItem?(oldItem, newItem)
             navigationController?.popViewController(animated: true)
         }
+    }
+    
+    func save(name: String, done: Bool, group: String) -> Item? {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return nil }
+        
+        let managedContext = appDelegate.persistentContainer.viewContext
+        var item: Item
+        
+        if let unwrapped = oldItem {
+            item = unwrapped
+        } else {
+            let entity = NSEntityDescription.entity(forEntityName: "Item", in: managedContext)!
+            item = NSManagedObject(entity: entity, insertInto: managedContext) as! Item
+        }
+        
+        item.setup(name: name, done: done, group: group)
+        
+        do {
+            try managedContext.save()
+            return item
+        } catch let error as NSError {
+            print("Could not save. \(error.userInfo)")
+            return nil
+        }
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {

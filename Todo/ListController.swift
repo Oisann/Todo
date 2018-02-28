@@ -7,12 +7,14 @@
 //
 
 import UIKit
+import CoreData
 
 class ListController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     var itemTable: UITableView!
-    var keys: [String] = ["Veldig Hemmelig"]
-    var items: [String:[Item]] = ["Veldig Hemmelig":[Item(name: "Super Hemmelig", done: false, group: "Veldig Hemmelig")]]
+    var keys: [String] = []
+    var items: [String:[Item]] = [:]
+    var initialFetch: Bool = false
     
     struct ItemIndexPath {
         let item: Item
@@ -31,6 +33,21 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
         return keys.index(of: key) ?? 0
     }
     
+    func addItem(_ newItem: Item) {
+        self.itemTable.beginUpdates()
+        var section = self.keys.index(of: newItem.group) ?? 0
+        if self.items[newItem.group] == nil {
+            self.keys.append(newItem.group)
+            section = self.keys.index(of: newItem.group) ?? 0
+            self.items.updateValue([], forKey: newItem.group)
+            self.itemTable.insertSections([section], with: .automatic)
+        }
+        let count = self.items[newItem.group]?.count ?? 0
+        self.items[newItem.group]?.append(newItem)
+        self.itemTable.insertRows(at: [IndexPath(row: count, section: section)], with: .automatic)
+        self.itemTable.endUpdates()
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let viewController = segue.destination as? ItemViewController {
             let oldOne = sender as? ItemIndexPath
@@ -39,18 +56,7 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
                 [weak self] oldItem, newItem in
                 
                 guard let oldItem = oldItem else {
-                    self?.itemTable.beginUpdates()
-                    var section = self?.keys.index(of: newItem.group) ?? 0
-                    if self?.items[newItem.group] == nil {
-                        self?.keys.append(newItem.group)
-                        section = self?.keys.index(of: newItem.group) ?? 0
-                        self?.items.updateValue([], forKey: newItem.group)
-                        self?.itemTable.insertSections([section], with: .automatic)
-                    }
-                    let count = self?.items[newItem.group]?.count ?? 0
-                    self?.items[newItem.group]?.append(newItem)
-                    self?.itemTable.insertRows(at: [IndexPath(row: count, section: section)], with: .automatic)
-                    self?.itemTable.endUpdates()
+                    self?.addItem(newItem)
                     return
                 }
                 
@@ -126,6 +132,7 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
                     this.keys.remove(at: indexPath.section)
                     this.itemTable.reloadData()
                 }
+                self?.remove(item: currentItem)
             }))
             alertController.addAction(UIAlertAction(title: "Keep", style: .default, handler: nil))
             this.present(alertController, animated: true, completion: nil)
@@ -162,6 +169,20 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
         }))
         alertController.addAction(UIAlertAction(title: "Cancel", style: .destructive, handler: nil))
         self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func remove(item: Item) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        
+        let managedContext = appDelegate.persistentContainer.viewContext
+        
+        managedContext.delete(item)
+        
+        do {
+            try managedContext.save()
+        } catch let error as NSError {
+            print("Could not save. \(error.userInfo)")
+        }
     }
     
     @objc func addListItem() {
@@ -269,6 +290,25 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
         table.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
         table.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         itemTable = table
+        
+        if !initialFetch {
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+            let managedContext = appDelegate.persistentContainer.viewContext
+            let fetchRequest = NSFetchRequest<Item>(entityName: "Item")
+            
+            do {
+                let fetchedItems = try managedContext.fetch(fetchRequest).map({ (item) -> Item in
+                    return item as Item
+                })
+                for i in fetchedItems {
+                    addItem(i)
+                }
+            } catch let error as NSError {
+                print("Could not fetch. \(error), \(error.userInfo)")
+            }
+            initialFetch = true
+        }
+        
     }
     
     override func viewDidLoad() {
@@ -276,6 +316,7 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
         title = "Todo"
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addListItem))
         NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
+        
     }
     
     deinit {

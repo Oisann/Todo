@@ -7,13 +7,15 @@
 //
 
 import Foundation
+import CoreData
 
-class Item {
-    var name: String
-    var done: Bool
-    var group: String
+@objc(Item)
+class Item: NSManagedObject {
+    @NSManaged var name: String
+    @NSManaged var done: Bool
+    @NSManaged var group: String
     
-    init(name: String, done: Bool, group: String) {
+    func setup(name: String, done: Bool, group: String) {
         self.name = name
         self.done = done
         self.group = group
