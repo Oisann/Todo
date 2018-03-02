@@ -17,6 +17,7 @@
 		EC3F56522036ECA000DDAFCC /* TodoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F56512036ECA000DDAFCC /* TodoTests.swift */; };
 		EC3F565D2036ECA000DDAFCC /* TodoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F565C2036ECA000DDAFCC /* TodoUITests.swift */; };
 		EC3F566B20370EFA00DDAFCC /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC3F566A20370EFA00DDAFCC /* Item.swift */; };
+		EC57A8B52046ABDE0023F751 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC57A8B42046ABDE0023F751 /* Group.swift */; };
 		EC6A7046203C42CC00937662 /* ItemViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC6A7045203C42CC00937662 /* ItemViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -54,6 +55,7 @@
 		EC3F565C2036ECA000DDAFCC /* TodoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodoUITests.swift; sourceTree = "<group>"; };
 		EC3F565E2036ECA000DDAFCC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EC3F566A20370EFA00DDAFCC /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
+		EC57A8B42046ABDE0023F751 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
 		EC6A7045203C42CC00937662 /* ItemViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -115,6 +117,7 @@
 				EC3F566A20370EFA00DDAFCC /* Item.swift */,
 				EC2C359C203AE29000E7488B /* Extension.swift */,
 				EC6A7045203C42CC00937662 /* ItemViewController.swift */,
+				EC57A8B42046ABDE0023F751 /* Group.swift */,
 			);
 			path = Todo;
 			sourceTree = "<group>";
@@ -271,6 +274,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC57A8B52046ABDE0023F751 /* Group.swift in Sources */,
 				EC2C359D203AE29000E7488B /* Extension.swift in Sources */,
 				EC3F566B20370EFA00DDAFCC /* Item.swift in Sources */,
 				EC3F563C2036ECA000DDAFCC /* ListController.swift in Sources */,

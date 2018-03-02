@@ -7,12 +7,15 @@
 //
 
 import UIKit
+import CoreData
 
 class ListController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     
     var itemTable: UITableView!
-    var keys: [String] = ["Veldig Hemmelig"]
-    var items: [String:[Item]] = ["Veldig Hemmelig":[Item(name: "Super Hemmelig", done: false, group: "Veldig Hemmelig")]]
+    //var keys: [String] = []
+    //var items: [String:[Item]] = [:]
+    var groups: [Group] = []
+    var initialFetch: Bool = false
     
     struct ItemIndexPath {
         let item: Item
@@ -20,15 +23,33 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return items.count
+        return groups.count
     }
     
     func keyForSection(_ section: Int) -> String {
-        return keys[section]
+        return groups[section].name
     }
     
-    func sectionForKey(_ key: String) -> Int {
-        return keys.index(of: key) ?? 0
+    func sectionForGroup(_ group: Group) -> Int {
+        return groups.index(of: group) ?? 0
+    }
+    
+    func indexPathForSection(_ item: Item) -> IndexPath {
+        return IndexPath(row: item.group.items.count - 1, section: sectionForGroup(item.group))
+    }
+    
+    func addSectionIfNew(_ group: Group) {
+        if group.objectID.isTemporaryID {
+            let pos = self.sectionForGroup(group)
+            self.itemTable.insertSections([pos], with: .automatic)
+        }
+    }
+    
+    func addItem(_ newItem: Item) {
+        self.itemTable.beginUpdates()
+        self.addSectionIfNew(newItem.group)
+        self.itemTable.insertRows(at: [indexPathForSection(newItem)], with: .automatic)
+        self.itemTable.endUpdates()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -36,59 +57,48 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
             let oldOne = sender as? ItemIndexPath
             viewController.oldItem = oldOne?.item
             viewController.onSaveItem = {
-                [weak self] oldItem, newItem in
+                [unowned self] oldGroup, newItem in
                 
-                guard let oldItem = oldItem else {
-                    self?.itemTable.beginUpdates()
-                    var section = self?.keys.index(of: newItem.group) ?? 0
-                    if self?.items[newItem.group] == nil {
-                        self?.keys.append(newItem.group)
-                        section = self?.keys.index(of: newItem.group) ?? 0
-                        self?.items.updateValue([], forKey: newItem.group)
-                        self?.itemTable.insertSections([section], with: .automatic)
+                guard let oldGroup = oldGroup else {
+                    if !self.groups.contains(newItem.group) {
+                        self.groups.append(newItem.group)
                     }
-                    let count = self?.items[newItem.group]?.count ?? 0
-                    self?.items[newItem.group]?.append(newItem)
-                    self?.itemTable.insertRows(at: [IndexPath(row: count, section: section)], with: .automatic)
-                    self?.itemTable.endUpdates()
+                    self.addItem(newItem)
+                    self.savePersistentContainer()
                     return
                 }
                 
                 guard let old = oldOne else { return }
-                if self?.items[newItem.group] == nil {
-                    self?.itemTable.beginUpdates()
-                    
-                    self?.keys.append(newItem.group)
-                    let pos = self?.keys.index(of: newItem.group) ?? 0
-                    self?.items.updateValue([], forKey: newItem.group)
-                    self?.itemTable.insertSections([pos], with: .automatic)
-                    
-                    self?.itemTable.endUpdates()
+                
+                self.itemTable.beginUpdates()
+                let oldSection = self.sectionForGroup(oldGroup)
+                if oldGroup != newItem.group && oldGroup.items.count == 0 {
+                    self.itemTable.deleteSections([oldSection], with: .automatic)
+                    self.groups.remove(at: oldSection)
+                    self.removeGroup(group: oldGroup)
                 }
                 
-                self?.itemTable.beginUpdates()
-                let oldSection = self?.keys.index(of: oldItem.group) ?? 0
-                var section = self?.keys.index(of: newItem.group) ?? 0
+                //self.itemTable.endUpdates()
+                if !self.groups.contains(newItem.group) {
+                    self.groups.append(newItem.group)
+                }
                 
-                if oldItem.group != newItem.group {
-                    self?.items[newItem.group]?.append(newItem)
-                    self?.items[oldItem.group]?.remove(at: old.indexPath.item)
-                    
-                    if let count = self?.items[oldItem.group]?.count, count == 0 {
-                        self?.keys.remove(at: oldSection)
-                        section = self?.keys.index(of: newItem.group) ?? 0
-                        self?.items.removeValue(forKey: oldItem.group)
-                        self?.itemTable.deleteSections([oldSection], with: .automatic)
-                    }
-                    let count = self?.items[newItem.group]?.count ?? 0
-                    self?.itemTable.insertRows(at: [IndexPath(row: count - 1, section: section)], with: .automatic)
-                    self?.itemTable.deleteRows(at: [old.indexPath], with: .automatic)
+                //self.itemTable.beginUpdates()
+                self.addSectionIfNew(newItem.group)
+                //self.itemTable.endUpdates()
+                
+                //self.itemTable.beginUpdates()
+                
+                if oldGroup != newItem.group {
+                    self.itemTable.insertRows(at: [self.indexPathForSection(newItem)], with: .automatic)
+                    self.itemTable.deleteRows(at: [old.indexPath], with: .automatic)
                 } else {
-                    self?.items[oldItem.group]?[old.indexPath.item] = newItem
-                    self?.itemTable.reloadRows(at: [old.indexPath], with: .automatic)
+                    self.itemTable.reloadRows(at: [old.indexPath], with: .automatic)
                 }
                 
-                self?.itemTable.endUpdates()
+                self.itemTable.endUpdates()
+                
+                self.savePersistentContainer()
             }
         }
     }
@@ -98,13 +108,12 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        let key = keys[section]
-        return items[key]?.count ?? 0
+        return groups[section].items.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") ?? UITableViewCell(style: .default, reuseIdentifier: "Cell")
-        guard let currentItem = items[keyForSection(indexPath.section)]?[indexPath.item] else { return cell }
+        let currentItem = groups[indexPath.section].item(indexPath.item)
         cell.textLabel?.text = currentItem.name
         cell.selectionStyle = .none
         cell.accessoryType = currentItem.done ? .checkmark : .none
@@ -115,17 +124,28 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
         let delete = UITableViewRowAction(style: .destructive, title: "Delete", handler: {
             [weak self] action, indexPath in
             guard let this = self else { return }
-            guard let currentItem = this.items[this.keyForSection(indexPath.section)]?[indexPath.item] else { return }
+            let currentItem = this.groups[indexPath.section].item(indexPath.item)
             let alertController = UIAlertController(title: currentItem.name, message: "Are you sure you want to delete this item?", preferredStyle: .alert)
             alertController.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: {
                 alert in
-                this.items[currentItem.group]?.remove(at: indexPath.item)
-                this.itemTable.updateTableView(at: [indexPath], change: .remove)
-                if let section = this.items[currentItem.group], section.isEmpty {
-                    this.items.removeValue(forKey: currentItem.group)
-                    this.keys.remove(at: indexPath.section)
-                    this.itemTable.reloadData()
+                
+                tableView.beginUpdates()
+                var deleteSection = false
+                if currentItem.group.items.count == 1 {
+                    self?.groups.remove(at: self?.sectionForGroup(currentItem.group) ?? 0)
+                    self?.removeGroup(group: currentItem.group)
+                    deleteSection = true
                 }
+                
+                self?.remove(item: currentItem)
+                
+                tableView.deleteRows(at: [indexPath], with: .automatic)
+                
+                if deleteSection {
+                    tableView.deleteSections([indexPath.section], with: .automatic)
+                }
+                self?.savePersistentContainer()
+                tableView.endUpdates()
             }))
             alertController.addAction(UIAlertAction(title: "Keep", style: .default, handler: nil))
             this.present(alertController, animated: true, completion: nil)
@@ -133,15 +153,14 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
         let edit = UITableViewRowAction(style: .normal, title: "Edit", handler: {
             [weak self] action, indexPath in
             guard let this = self else { return }
-            guard let currentItem = this.items[this.keyForSection(indexPath.section)]?[indexPath.item] else { return }
-            //self?.editListItem(at: indexPath)
-            self?.performSegue(withIdentifier: "itemSegue", sender: ItemIndexPath(item: currentItem, indexPath: indexPath))
+            let currentItem = this.groups[indexPath.section].item(indexPath.item)
+            this.performSegue(withIdentifier: "itemSegue", sender: ItemIndexPath(item: currentItem, indexPath: indexPath))
         })
         return [delete, edit]
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let currentItem = items[keyForSection(indexPath.section)]?[indexPath.item] else { return }
+        let currentItem = groups[indexPath.section].item(indexPath.item)
         currentItem.done = !currentItem.done
         itemTable.updateTableView(at: [indexPath], change: .reload)
     }
@@ -162,6 +181,28 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
         }))
         alertController.addAction(UIAlertAction(title: "Cancel", style: .destructive, handler: nil))
         self.present(alertController, animated: true, completion: nil)
+    }
+    
+    func remove(item: Item) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let managedContext = appDelegate.persistentContainer.viewContext
+        managedContext.delete(item)
+    }
+    
+    func removeGroup(group: Group) {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let managedContext = appDelegate.persistentContainer.viewContext
+        managedContext.delete(group)
+    }
+    
+    func savePersistentContainer() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let managedContext = appDelegate.persistentContainer.viewContext
+        do {
+            try managedContext.save()
+         } catch let error as NSError {
+            print("Could not save. \(error.userInfo)")
+         }
     }
     
     @objc func addListItem() {
@@ -259,16 +300,33 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        let table = UITableView(frame: view.bounds, style: .plain)
-        view.addSubview(table)
-        table.dataSource = self
-        table.delegate = self
-        table.translatesAutoresizingMaskIntoConstraints = false
-        table.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        table.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        table.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        table.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        itemTable = table
+        
+        if !initialFetch {
+            
+            let table = UITableView(frame: view.bounds, style: .plain)
+            view.addSubview(table)
+            table.dataSource = self
+            table.delegate = self
+            table.translatesAutoresizingMaskIntoConstraints = false
+            table.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+            table.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            table.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+            table.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+            itemTable = table
+            
+            guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+            let managedContext = appDelegate.persistentContainer.viewContext
+            let fetchRequest = NSFetchRequest<Group>(entityName: "Group")
+            
+            do {
+                groups = try managedContext.fetch(fetchRequest).map({ $0 as Group })
+                itemTable.reloadData()
+            } catch let error as NSError {
+                print("Could not fetch. \(error), \(error.userInfo)")
+            }
+            initialFetch = true
+        }
+        
     }
     
     override func viewDidLoad() {
@@ -276,6 +334,7 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
         title = "Todo"
         navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addListItem))
         NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
+        
     }
     
     deinit {
