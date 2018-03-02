@@ -12,19 +12,26 @@ import CoreData
 class ItemViewController: UIViewController {
     
     var newItem: Item!
-    var oldItem: Item?
-    var onSaveItem: ((_ old: Item?, _ new: Item) -> Void)?
+    var oldItem: Item? {
+        didSet {
+            if let group = oldItem?.group {
+                oldGroup = group
+            }
+        }
+    }
+    var oldGroup: Group!
+    var onSaveItem: ((_ old: Group?, _ new: Item) -> Void)?
     
     var nameField, sectionField: UITextField!
     var toggleDone: UISwitch!
     
     @objc func saveItem() {
         guard let newName = nameField.text, !newName.isEmpty, let newGroup = sectionField.text, !newGroup.isEmpty else { return }
-        if (newName != oldItem?.name || newGroup != oldItem?.group || toggleDone.isOn != oldItem?.done) || oldItem == nil {
+        if (newName != oldItem?.name || newGroup != oldItem?.group.name || toggleDone.isOn != oldItem?.done) || oldItem == nil {
             //newItem = Item(name: newName, done: toggleDone.isOn, group: newGroup)
             guard let newestItem = save(name: newName, done: toggleDone.isOn, group: newGroup) else { return }
             newItem = newestItem
-            onSaveItem?(oldItem, newItem)
+            onSaveItem?(oldGroup, newItem)
             navigationController?.popViewController(animated: true)
         }
     }
@@ -41,16 +48,25 @@ class ItemViewController: UIViewController {
             let entity = NSEntityDescription.entity(forEntityName: "Item", in: managedContext)!
             item = NSManagedObject(entity: entity, insertInto: managedContext) as! Item
         }
+        item.setup(name: name, done: done)
         
-        item.setup(name: name, done: done, group: group)
+        
+        let fetchRequest = NSFetchRequest<Group>(entityName: "Group")
+        fetchRequest.predicate = NSPredicate(format: "name == %@", group)
         
         do {
-            try managedContext.save()
-            return item
+            if let fetchedGroup = try managedContext.fetch(fetchRequest).map({ $0 as Group }).first {
+                item.group = fetchedGroup
+            } else {
+                let entity = NSEntityDescription.entity(forEntityName: "Group", in: managedContext)!
+                item.group = NSManagedObject(entity: entity, insertInto: managedContext) as! Group
+                item.group.setup(name: group)
+            }
         } catch let error as NSError {
-            print("Could not save. \(error.userInfo)")
-            return nil
+            print("Could not fetch. \(error), \(error.userInfo)")
         }
+        
+        return item
         
     }
     
@@ -84,7 +100,7 @@ class ItemViewController: UIViewController {
         
         sectionField = UITextField()
         sectionField.placeholder = "Section"
-        sectionField.text = oldItem?.group
+        sectionField.text = oldItem?.group.name
         sectionField.borderStyle = .roundedRect
         sectionField.translatesAutoresizingMaskIntoConstraints = false
         sectionField.heightAnchor.constraint(equalToConstant: 35).isActive = true

@@ -13,11 +13,10 @@ import CoreData
 class Item: NSManagedObject {
     @NSManaged var name: String
     @NSManaged var done: Bool
-    @NSManaged var group: String
+    @NSManaged var group: Group
     
-    func setup(name: String, done: Bool, group: String) {
+    func setup(name: String, done: Bool) {
         self.name = name
         self.done = done
-        self.group = group
     }
 }
