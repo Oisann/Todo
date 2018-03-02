@@ -19,7 +19,7 @@ class Group: NSManagedObject {
     }
     
     func item(_ at: Int) -> Item {
-        let desc = NSSortDescriptor(key: "name", ascending: false)
+        let desc = NSSortDescriptor(key: "sort", ascending: true)
         return self.items.sortedArray(using: [desc])[at] as! Item
     }
 }

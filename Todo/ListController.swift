@@ -59,24 +59,12 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
             viewController.onSaveItem = {
                 [unowned self] oldGroup, newItem in
                 
-                guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-                let managedContext = appDelegate.persistentContainer.viewContext
-                
-                
                 guard let oldGroup = oldGroup else {
-                    
                     if !self.groups.contains(newItem.group) {
                         self.groups.append(newItem.group)
                     }
-                    
                     self.addItem(newItem)
-                    
-                    do {
-                        try managedContext.save()
-                    } catch let error as NSError {
-                        print("Could not save. \(error.userInfo)")
-                    }
-                    
+                    self.savePersistentContainer()
                     return
                 }
                 
@@ -110,11 +98,7 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
                 
                 self.itemTable.endUpdates()
                 
-                do {
-                    try managedContext.save()
-                } catch let error as NSError {
-                    print("Could not save. \(error.userInfo)")
-                }
+                self.savePersistentContainer()
             }
         }
     }
@@ -160,7 +144,7 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
                 if deleteSection {
                     tableView.deleteSections([indexPath.section], with: .automatic)
                 }
-                
+                self?.savePersistentContainer()
                 tableView.endUpdates()
             }))
             alertController.addAction(UIAlertAction(title: "Keep", style: .default, handler: nil))
@@ -201,30 +185,24 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     func remove(item: Item) {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        
         let managedContext = appDelegate.persistentContainer.viewContext
-        
         managedContext.delete(item)
-        
-        do {
-            try managedContext.save()
-        } catch let error as NSError {
-            print("Could not save. \(error.userInfo)")
-        }
     }
     
     func removeGroup(group: Group) {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
-        
         let managedContext = appDelegate.persistentContainer.viewContext
-        
         managedContext.delete(group)
-        
+    }
+    
+    func savePersistentContainer() {
+        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        let managedContext = appDelegate.persistentContainer.viewContext
         do {
             try managedContext.save()
-        } catch let error as NSError {
+         } catch let error as NSError {
             print("Could not save. \(error.userInfo)")
-        }
+         }
     }
     
     @objc func addListItem() {
@@ -322,24 +300,26 @@ class ListController: UIViewController, UITableViewDataSource, UITableViewDelega
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        let table = UITableView(frame: view.bounds, style: .plain)
-        view.addSubview(table)
-        table.dataSource = self
-        table.delegate = self
-        table.translatesAutoresizingMaskIntoConstraints = false
-        table.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        table.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-        table.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        table.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-        itemTable = table
         
         if !initialFetch {
+            
+            let table = UITableView(frame: view.bounds, style: .plain)
+            view.addSubview(table)
+            table.dataSource = self
+            table.delegate = self
+            table.translatesAutoresizingMaskIntoConstraints = false
+            table.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+            table.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+            table.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+            table.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+            itemTable = table
+            
             guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
             let managedContext = appDelegate.persistentContainer.viewContext
             let fetchRequest = NSFetchRequest<Group>(entityName: "Group")
             
             do {
-                groups = try managedContext.fetch(fetchRequest).map({ $0 as Group})
+                groups = try managedContext.fetch(fetchRequest).map({ $0 as Group })
                 itemTable.reloadData()
             } catch let error as NSError {
                 print("Could not fetch. \(error), \(error.userInfo)")

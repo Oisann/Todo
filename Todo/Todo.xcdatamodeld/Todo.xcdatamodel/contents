@@ -7,10 +7,11 @@
     <entity name="Item" representedClassName="Item" syncable="YES">
         <attribute name="done" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sort" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
         <relationship name="group" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Group" inverseName="items" inverseEntity="Group" syncable="YES"/>
     </entity>
     <elements>
-        <element name="Item" positionX="-63" positionY="-18" width="128" height="90"/>
         <element name="Group" positionX="-63" positionY="9" width="128" height="75"/>
+        <element name="Item" positionX="-63" positionY="-18" width="128" height="105"/>
     </elements>
 </model>

@@ -27,7 +27,7 @@ class ItemViewController: UIViewController {
     
     @objc func saveItem() {
         guard let newName = nameField.text, !newName.isEmpty, let newGroup = sectionField.text, !newGroup.isEmpty else { return }
-        if (newName != oldItem?.name || newGroup != oldItem?.group.name || toggleDone.isOn != oldItem?.done) || oldItem == nil {
+        if (newName != oldItem?.name || newGroup != oldGroup.name || toggleDone.isOn != oldItem?.done) || oldItem == nil {
             //newItem = Item(name: newName, done: toggleDone.isOn, group: newGroup)
             guard let newestItem = save(name: newName, done: toggleDone.isOn, group: newGroup) else { return }
             newItem = newestItem
@@ -48,8 +48,6 @@ class ItemViewController: UIViewController {
             let entity = NSEntityDescription.entity(forEntityName: "Item", in: managedContext)!
             item = NSManagedObject(entity: entity, insertInto: managedContext) as! Item
         }
-        item.setup(name: name, done: done)
-        
         
         let fetchRequest = NSFetchRequest<Group>(entityName: "Group")
         fetchRequest.predicate = NSPredicate(format: "name == %@", group)
@@ -65,6 +63,8 @@ class ItemViewController: UIViewController {
         } catch let error as NSError {
             print("Could not fetch. \(error), \(error.userInfo)")
         }
+        
+        item.setup(name: name, done: done, sort: item.group.items.count)
         
         return item
         
